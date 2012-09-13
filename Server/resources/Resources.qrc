@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file alias="ApplicationIcon">Funnel.png</file>
+    </qresource>
+</RCC>

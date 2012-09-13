@@ -1,0 +1,13 @@
+#ifndef IMDBPLUGIN_GLOBAL_H
+#define IMDBPLUGIN_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(IMDBPLUGIN_LIBRARY)
+#  define IMDBPLUGINSHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define IMDBPLUGINSHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // IMDBPLUGIN_GLOBAL_H
+

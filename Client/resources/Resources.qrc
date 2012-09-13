@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file alias="DeleteFolder">DeleteFolder.png</file>
+        <file alias="NewFolder">NewFolder.png</file>
+        <file alias="FilterFolder">FilterFolder.png</file>
+        <file alias="HideFolderFiles">HideFolderFiles.png</file>
+        <file alias="ShowFolderFiles">ShowFolderFiles.png</file>
+        <file alias="ApplicationIcon">Funnel.png</file>
+        <file alias="ServerIdle">GreenLight.png</file>
+        <file alias="ServerDisconnected">RedLight.png</file>
+        <file alias="ServerBusy">YellowLight.png</file>
+        <file alias="LeftArrow">LeftArrow.png</file>
+        <file alias="RightArrow">RightArrow.png</file>
+        <file alias="UpArrow">UpArrow.png</file>
+        <file alias="DetailsView">DetailsView.png</file>
+        <file alias="IconView">IconView.png</file>
+        <file alias="Start">Start.png</file>
+        <file alias="Stop">Stop.png</file>
+        <file alias="AddCondition">Add.png</file>
+        <file alias="DeleteCondition">Delete.png</file>
+    </qresource>
+</RCC>

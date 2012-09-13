@@ -1,0 +1,13 @@
+#ifndef MP3PLUGIN_GLOBAL_H
+#define MP3PLUGIN_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(MP3PLUGIN_LIBRARY)
+#  define MP3PLUGINSHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define MP3PLUGINSHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // MP3PLUGIN_GLOBAL_H
+

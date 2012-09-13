@@ -1,0 +1,13 @@
+#ifndef FILEPLUGIN_GLOBAL_H
+#define FILEPLUGIN_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(FILEPLUGIN_LIBRARY)
+#  define FILEPLUGINSHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define FILEPLUGINSHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // FILEPLUGIN_GLOBAL_H
+

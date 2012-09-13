@@ -1,0 +1,14 @@
+
+# Qt User files
+*.pro.user
+/Client-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/ClientServerInterface-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/FilePlugin-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/ImdbPlugin-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/Mp3Plugin-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/PluginInterface-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/QFileExtensions-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/Server-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/ServerDatabase-build-desktop-Qt_4_8_1_in_PATH__System__Release/
+/Test/
+/Build/
