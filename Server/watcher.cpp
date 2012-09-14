@@ -158,14 +158,12 @@ void Watcher::watchDirectory(QString directory) {
             qDebug() << "Detected new file " << entryPath;
 #endif
                 // signal new file
-//              fileAdded(entryPath);
                 fileAdded(entryInfo.absoluteFilePath());
             } else if (entryInfo.lastModified() >= m_lastPass) {
 #ifdef _VERBOSE_WATCHER
                 qDebug() << "Detected modified file " << entryPath;
 #endif
                 // signal modified file
-//              fileModified(entryPath);
                 fileModified(entryInfo.absoluteFilePath());
             }
         } else {

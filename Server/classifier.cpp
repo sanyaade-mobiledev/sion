@@ -287,9 +287,6 @@ void Classifier::loadFilters(QString filename) {
 
     displayActivity(tr("Filters loaded"));
 
-    // now start all filters
-    start();
-
     file.close();
 }
 

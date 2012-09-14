@@ -255,8 +255,19 @@ bool Filter::checkAndSaveFile(QString path) {
 /**
   * Matches (recursively) a new file against the filter rules (plugin' scripts). If the file is
   * filtered-in, it'll be saved in the DB.
+  *
+  * Edge Case: When the database is reloaded, the watcher is not in sync with the db, it hence
+  * detects new files which are already in the db. This is the appropriate time to check whether
+  * the file is still retained by the plugins since it could have been modified while the server
+  * wasn't running or was running another filter set.
   */
 void Filter::checkNewFile(QString path) {
+    // Edge Case: if the file is already here (db was reloaded) check if it still matches the rules
+    if (m_db.hasFile(m_filterId, path)) {
+        checkModifiedFile(path);
+        return;
+    }
+
     // does the file rely under the watched directory?
     if (!path.startsWith(m_dir))
         return;
