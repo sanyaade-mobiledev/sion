@@ -1,5 +1,5 @@
 /*
- * SION! Server mp3 file plugin.
+ * SION! Server IMDBApi.com file plugin.
  *
  * Copyright (C) Intel Corporation. All rights reserved.
  *
