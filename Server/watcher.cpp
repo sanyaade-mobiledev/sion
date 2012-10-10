@@ -195,10 +195,10 @@ void Watcher::run() {
         return;
 
     m_stop = false;
+    m_numWatchedFiles = 0;
 
     // we'll start by scanning this one
     m_files.addPath(m_url, true);
-
     do {
         passStart.restart();
 

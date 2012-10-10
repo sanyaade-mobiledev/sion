@@ -350,6 +350,7 @@ void MainWindow::updateMenu() {
     bool isForwardOk = isHistory && m_historyIndex < m_history.count() - 1;
     bool isUpOk = isSelection && !isRoot;
     bool isFilterRunning = isFilter && ((FilterTreeNode *)selNodeP)->isRunning();
+    bool isPlugins = !m_availablePlugins.isEmpty();
 
     // update the navigation buttons
     m_backButtonP->setEnabled(isBackOk);
@@ -367,7 +368,7 @@ void MainWindow::updateMenu() {
     m_openFolderP->setEnabled(m_isServerLocal && (isSelection && !isRoot && isPath && ((isFile && isParent) || isFilter)));
     m_openP->setEnabled(isSelection && !isRoot && isPath);
 
-    m_newFilterP->setEnabled(isConnected && isFilter);
+    m_newFilterP->setEnabled(isConnected && isPlugins && isFilter);
     m_deleteFilterP->setEnabled(isConnected && isFilter && !isRoot);
 
     m_startFilterP->setEnabled(isFilter && !isRoot && !isFilterRunning);
