@@ -32,6 +32,8 @@
 #include "imdbplugin.h"
 #include "scriptrunner.h"
 
+QMap<QString, AttributeCacheEntry *> ImdbPlugin::m_attributesCache;
+
 PluginInterface *ImdbPlugin::newInstance(QString virtualDirectoryPath) {
     ImdbPlugin *newInstanceP = new ImdbPlugin();
     newInstanceP->initialize(virtualDirectoryPath);
@@ -67,20 +69,22 @@ void ImdbPlugin::initialize(QString virtualDirectoryPath) {
 }
 
 void ImdbPlugin::loadAttributes(QString filepath) {
-#ifdef _VERBOSE_PLUGIN
+    QDomElement  root;
+    QDomNode     node;
+    QString      movieName;
+    QString      movieXmlFile;
+    QDomDocument xml;
+
+#ifdef _VERBOSE_IMDB_PLUGIN
     qDebug() << "loading attributes for file: " << filepath;
 #endif
 
-    // already loaded?
-    if (m_lastLoadedFile == filepath) {
-#ifdef _VERBOSE_PLUGIN
-        qDebug() << "already loaded attributes for file: " << filepath;
-#endif
-        return;
-    }
-
     // loads the base attributes
     FilePlugin::loadAttributes(filepath);
+
+    // are the attributes in the cache?
+    if (retrieveAttributesFromCache(filepath, ImdbPlugin::m_attributesCache))
+        return;
 
     setAttributeValue(TITLE_ATTR, QVariant(tr("Unknown")));
     setAttributeValue(YEAR_ATTR, QVariant(tr("Unknown")));
@@ -107,31 +111,27 @@ void ImdbPlugin::loadAttributes(QString filepath) {
         return;
 
     // loads the movie attributes
-    QString movieName = getAttributeValue(NAME_ATTR).toString();
+    movieName = getAttributeValue(NAME_ATTR).toString();
     movieName = movieName.left(movieName.lastIndexOf("."));
-    QString movieXmlFile = movieName + ".xml";
+    movieXmlFile = movieName + ".xml";
 
     // http request
     QFileExt::downloadPage("www.imdbapi.com", "/?t=" + QUrl::toPercentEncoding(movieName) + "&r=XML", movieXmlFile);
 
     // get attributes from temporary xml file
     // load dom
-
-    QDomDocument xml;
     QFile file(movieXmlFile);
     if (file.size() == 0) {
         // the site didn't know much about the file, no need to
         // analyze the result.
         file.remove();
-        return;
+        goto endLoadAttributes;
     }
 
     if (!file.open(QIODevice::ReadOnly))
-      return;
+      goto endLoadAttributes;
 
     // set dom content
-    QDomElement root;
-    QDomNode    node;
     if(!xml.setContent(&file))
         goto cleanup;
 
@@ -166,6 +166,10 @@ cleanup:
 
     // remove xml file
     file.remove();
+
+endLoadAttributes:
+    // save attributes in the cache
+    saveAttributesInCache(filepath, ImdbPlugin::m_attributesCache);
 }
 
 Q_EXPORT_PLUGIN2(ImdbPlugin, ImdbPlugin)

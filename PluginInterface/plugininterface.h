@@ -53,7 +53,6 @@ public:
     virtual void                    initialize(QString virtualDirectoryPath) = 0;
     virtual QString                 getName()  = 0;
     virtual QString                 getTip() = 0;
-    virtual void                    forceLoadAttributes(QString filepath) = 0;
     virtual void                    loadAttributes(QString filepath) = 0;
     virtual void                    setScript(QString script)  = 0;
     virtual QString                 getScript()  = 0;

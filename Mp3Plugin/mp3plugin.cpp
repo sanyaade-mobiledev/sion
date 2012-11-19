@@ -31,6 +31,8 @@
 #include "mp3plugin.h"
 #include "scriptrunner.h"
 
+QMap<QString, AttributeCacheEntry *> Mp3Plugin::m_attributesCache;
+
 PluginInterface *Mp3Plugin::newInstance(QString virtualDirectoryPath) {
     Mp3Plugin *newInstanceP = new Mp3Plugin();
     newInstanceP->initialize(virtualDirectoryPath);
@@ -53,20 +55,16 @@ void Mp3Plugin::initialize(QString virtualDirectoryPath) {
 }
 
 void Mp3Plugin::loadAttributes(QString filepath) {
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
     qDebug() << "loading attributes for file: " << filepath;
 #endif
 
-    // already loaded?
-    if (m_lastLoadedFile == filepath) {
-#ifdef _VERBOSE_PLUGIN
-        qDebug() << "already loaded attributes for file: " << filepath;
-#endif
-        return;
-    }
-
     // loads the base attributes
     FilePlugin::loadAttributes(filepath);
+
+    // are the attributes in the cache?
+    if (retrieveAttributesFromCache(filepath, Mp3Plugin::m_attributesCache))
+        return;
 
     setAttributeValue(GENRE_ATTR, QVariant(tr("Unknown")));
     setAttributeValue(ALBUM_ATTR, QVariant(tr("Unknown")));
@@ -113,13 +111,16 @@ void Mp3Plugin::loadAttributes(QString filepath) {
     setAttributeValue(TRACK_ATTR, getMp3TagFromFile(fileP, ID3_FRAME_TRACK));
 
     id3_file_close(fileP);
+
+    // save attributes in the cache
+    saveAttributesInCache(filepath, Mp3Plugin::m_attributesCache);
 }
 
 QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNameP) {
     char        *stringP;
     QString     string;
     QVariant    result;
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
     QString     str;
 #endif
 
@@ -127,14 +128,14 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
 
     struct id3_frame *frameP;
     if ((frameP = id3_tag_findframe(tagP, tagNameP, 0))) {
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
         str.sprintf("%s (%s):", frameP->id, frameP->description);
         qDebug() << str;
 #endif
         for (unsigned j = 0;j < frameP->nfields; ++j) {
             union id3_field *fieldP = frameP->fields + j;
 
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
             str.sprintf("field type: %s",(const char *[]){
                "ID3_FIELD_TYPE_TEXTENCODING",
                "ID3_FIELD_TYPE_LATIN1",
@@ -158,7 +159,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
 
             switch(fieldP->type) {
                 case ID3_FIELD_TYPE_TEXTENCODING:
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                     str.sprintf("text encoding: %s",(const char *[]){
                          "ID3_FIELD_TEXTENCODING_ISO_8859_1",
                          "ID3_FIELD_TEXTENCODING_UTF_16",
@@ -173,7 +174,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
                 case ID3_FIELD_TYPE_INT16:
                 case ID3_FIELD_TYPE_INT24:
                 case ID3_FIELD_TYPE_INT32:
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                     str.sprintf("integer %li", fieldP->number.value);
                     qDebug() << str;
 #endif
@@ -183,7 +184,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
                 case ID3_FIELD_TYPE_LATIN1:
                 case ID3_FIELD_TYPE_LATIN1FULL:
                     stringP = (char *)fieldP->latin1.ptr;
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                     str.sprintf("latin or latin full %s", stringP);
                     qDebug() << str;
 #endif
@@ -194,7 +195,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
                     for (unsigned k = 0; k < fieldP->latin1list.nstrings; ++k) {
                         stringP = (char *)fieldP->latin1list.strings[k];
 
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                         str.sprintf("latin string list %u: %s\n", k, stringP);
                         qDebug() << str;
 #endif
@@ -211,7 +212,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
                      }
                      stringP = (char *)id3_ucs4_latin1duplicate(fieldP->string.ptr);
 
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                     str.sprintf("string or string full: %s", stringP);
                     qDebug() << str;
 #endif
@@ -226,7 +227,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
                             continue;
 
                         stringP = (char *)id3_ucs4_latin1duplicate(fieldP->stringlist.strings[k]);
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                         str.sprintf("string list %u: %s\n", k, stringP);
                         qDebug() << str;
 #endif
@@ -241,7 +242,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
                 case ID3_FIELD_TYPE_DATE:
                     stringP = fieldP->immediate.value;
 
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                     str.sprintf("immediate value: %s", stringP);
                     qDebug() << str;
 #endif
@@ -251,7 +252,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
 
                 case ID3_FIELD_TYPE_INT32PLUS:
                 case ID3_FIELD_TYPE_BINARYDATA:
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                     str = "binary data: ";
                     for(id3_length_t k = 0; k < fieldP->binary.length;) {
                         QString byteStr;
@@ -263,7 +264,7 @@ QVariant Mp3Plugin::getMp3TagFromFile(struct id3_file *fileP, const char *tagNam
                     result = QVariant(QByteArray((const char *)fieldP->binary.data, fieldP->binary.length));
                     break;
 
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_MP3_PLUGIN
                 default:
                     qDebug() << "???";
 #endif

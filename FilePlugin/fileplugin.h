@@ -25,6 +25,7 @@
 
 #include <QMap>
 #include <QString>
+#include <QDateTime>
 
 #include "FilePlugin_global.h"
 
@@ -34,7 +35,7 @@
 #include "script.h"
 #include "scriptrunner.h"
 
-//#define _VERBOSE_PLUGIN 1
+#define _VERBOSE_FILE_PLUGIN 1
 
 #define  FILE_PLUGIN_NAME  "Base File Plugin"
 #define  FILE_PLUGIN_TIP   "Handles Basic File Attributes (creation time, name, path, size, etc)."
@@ -48,12 +49,31 @@
 #define READ_ATTR       "Read"
 #define LINK_ATTR       "Link"
 
+#define MAX_CACHED_ATTRIBUTES 500
+
+typedef QMap<QString, Attribute*> AttributesMap;
+
+class AttributeCacheEntry {
+public:
+    AttributeCacheEntry() {
+        fileTime = time = QDateTime::currentDateTime();
+    }
+    ~AttributeCacheEntry() {
+        qDeleteAll(attributes);
+        attributes.clear();
+    }
+
+    QDateTime       time;           // cache entry creation/update time
+    QDateTime       fileTime;       // file last modification time
+    AttributesMap   attributes;     // file attributes
+};
+
 class FILEPLUGINSHARED_EXPORT FilePlugin : public PluginInterface {
 //    Q_OBJECT
     Q_INTERFACES(PluginInterface)
 
 public:
-    explicit FilePlugin() : PluginInterface(), m_wrapper(this) {}
+    explicit FilePlugin() : PluginInterface(), m_wrapper(this), m_cacheSem(1) {}
 
     // there's no way to specify a constructor in a plugin interface (nor a static factory)
     // so we call pluginP = pluginP->newInstance(<vPath>); then unload the plugin.
@@ -61,7 +81,7 @@ public:
     void            initialize(QString virtualDirectoryPath);
 
     virtual ~FilePlugin() {
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_FILE_PLUGIN
         qDebug() << "Deleting Base plugin";
 #endif
 
@@ -69,12 +89,19 @@ public:
         if (m_scriptP)
             delete m_scriptP;
 
-#ifdef _VERBOSE_PLUGIN
+#ifdef _VERBOSE_FILE_PLUGIN
         qDebug() << "Base plugin clears m_attributes";
 #endif
         // delete attributes
         qDeleteAll(m_attributes);
         m_attributes.clear();
+
+        // delete cache. Every plugin deletion clears the cache, but
+        // when deleting a plugin, the scanning/indexing should be stopped...
+        m_cacheSem.acquire();
+        qDeleteAll(m_attributesCache);
+        m_attributesCache.clear();
+        m_cacheSem.release();
     }
 
     /**
@@ -123,7 +150,6 @@ public:
 
     bool checkFile(QString filepath);
 
-    void forceLoadAttributes(QString filepath);
     void loadAttributes(QString filepath);
 
     /**
@@ -152,13 +178,22 @@ public:
     }
 
 protected:
-    QString                     m_lastLoadedFile;           // if same encountered since lastLoadAttributes, don't load them twice
-    QMap<QString, Attribute*>   m_attributes;               // file attributes used to filter files
-    QString                     m_virtualDirectoryPath;     // the path of the associated virtual directory in the browser
-    Script                      *m_scriptP;                 // javascript rule used to filter files
-    bool                        m_result;                   // result of the last run javascript rule
-    ScriptRunner                m_scripter;
-    PluginInterfaceWrapper      m_wrapper;                  // wraps this to make it available in the script context
+    AttributesMap          m_attributes;               // file attributes used to filter files
+    QString                m_virtualDirectoryPath;     // the path of the associated virtual directory in the browser
+    Script                 *m_scriptP;                 // javascript rule used to filter files
+    bool                   m_result;                   // result of the last run javascript rule
+    ScriptRunner           m_scripter;
+    PluginInterfaceWrapper m_wrapper;                  // wraps this to make it available in the script context
+    QSemaphore             m_cacheSem;
+
+    void        saveAttributesInCache(QString filepath, QMap<QString, AttributeCacheEntry *> &attributesMapCache);          // cache the attributes for the given file
+    bool        retrieveAttributesFromCache(QString filepath, QMap<QString, AttributeCacheEntry *> &attributesMapCache);    // reload attributes
+
+    void        saveAttributes(AttributeCacheEntry *entryP);
+    void        loadAttributes(AttributeCacheEntry *entryP);
+
+private:
+    static  QMap<QString, AttributeCacheEntry *>    m_attributesCache;          // the attributes cache
 };
 
 #endif // FILEPLUGIN_H

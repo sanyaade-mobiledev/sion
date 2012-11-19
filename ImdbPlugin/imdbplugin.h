@@ -50,7 +50,7 @@
     additional meta-data.
 */
 
-//#define _VERBOSE_PLUGIN 1
+//#define _VERBOSE_IMDB_PLUGIN 1
 
 class IMDBPLUGINSHARED_EXPORT ImdbPlugin : public FilePlugin {
 //    Q_OBJECT
@@ -76,6 +76,9 @@ public:
     }
 
     void loadAttributes(QString filepath);
+
+private:
+    static QMap<QString, AttributeCacheEntry *> m_attributesCache; // the attributes cache
 };
 
 

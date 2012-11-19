@@ -224,7 +224,7 @@ bool Filter::checkAndSaveFile(QString path) {
     // if any plugin accepts the file, then save its ref
     // in the db
     for (int i = 0; !saved && i < m_plugins.count(); i++) {
-        m_plugins[i]->forceLoadAttributes(path);
+        m_plugins[i]->loadAttributes(path);
         saved |= m_plugins[i]->checkFile(path);
     }
 

@@ -38,7 +38,7 @@ class Attribute : public QObject
     Q_OBJECT
 
 public:
-    explicit Attribute(QString name, QString tip, QString className, QObject *parent = 0);
+    explicit Attribute(QString name, QString tip = "", QString className = "", QObject *parent = 0);
 
     QString  m_className; // attribute's class
     QVariant m_value;   // attribute's value

@@ -41,7 +41,7 @@
 #define TRACK_ATTR      "Track"
 #define GENRE_ATTR      "Genre"
 
-//#define _VERBOSE_PLUGIN 1
+//#define _VERBOSE_MP3_PLUGIN 1
 
 class MP3PLUGINSHARED_EXPORT Mp3Plugin : public FilePlugin {
 //    Q_OBJECT
@@ -69,6 +69,8 @@ public:
     void loadAttributes(QString filepath);
 
 private:
+    static  QMap<QString, AttributeCacheEntry *> m_attributesCache; // the attributes cache
+
     QVariant getMp3TagFromFile(struct id3_file *fileP, const char *tagNameP);
 };
 

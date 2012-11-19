@@ -933,8 +933,16 @@ void MainWindow::on_actionOpen_triggered() {
             requestFilterData(filter);
         }
     } else {
-        // if a file, asks the server for its content
-        m_serverProxy.requestFileContent(selNodeP->getPath());
+        // if a file, asks the server for its content (if remote)
+        if (m_isServerLocal)  {
+            // open the local file
+            QUrl    pathUrl;
+
+            pathUrl.setPath("file:///" + selNodeP->getPath());
+            QDesktopServices::openUrl(pathUrl);
+        } else
+            // asks the server for the remote content
+            m_serverProxy.requestFileContent(selNodeP->getPath());
     }
 }
 
@@ -1266,12 +1274,7 @@ void MainWindow::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *itemP, int col
     if (!itemP || itemP == m_rootP)
         return;
 
-    // is it a file
-    if (((TreeNode *)itemP)->isFilter())
-        return;
-
-    // a file, open it
-    m_serverProxy.requestFileContent(((TreeNode *)itemP)->getPath());
+    on_actionOpen_triggered();
 }
 
 /**
