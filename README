@@ -5,53 +5,83 @@ Development notes and TODOs
 WHAT'S THIS:
 ------------
 
-        . With the increasing number of high capacity mass storages now accessible to computers or home appliances (TVs, set top boxes…),
-        either directly (physically connected peripherals over USB…) or remotely (Cloud, Web, RSS, FTP, DLNA…), users face the problem of
-        easy and rapid content browsing and sorting. The rule based browsing enables users to filter and organize his/her multimedia or
-        any type of content easily and overall to see what he/she wants, where he/she expects to see it, independently of the content
-        sources physical organization and location. In short, EzBrowser is a javascript rules based browsing solution. It enables the user
-        to virtually organize content on a computer.
+        . With the increasing number of high capacity mass storages now
+        accessible to computers or home appliances (TVs, set top boxes…),
+        either directly (physically connected peripherals over USB…) or
+        remotely (Cloud, Web, RSS, FTP, DLNA…), users face the problem of
+        easy and rapid content browsing and sorting. The rule based browsing
+        enables users to filter and organize his/her multimedia or any type
+        of content easily and overall to see what he/she wants, where he/she
+        expects to see it, independently of the content sources physical
+        organization and location. In short, EzBrowser is a javascript rules
+        based browsing solution. It enables the user to virtually organize
+        content on a computer.
 
-        . The client browser interacts with the server to create filters. A filter is a virtual folder, which will retain content based on
-        javascript rules defined by the user (either manually or via a GUI) in the browser. Each filter, when created, is associated one
-        or several plugins, responsible for extracting metadata from specific content (mp3 files, video files, etc). A filter is watching
-        content from a physical location, and can optionnally scan recursively children directories. Everytime a new content (added or
-        modified content) is detected, the content metadata is extracted by the associated plugin(s), and matched against the associated
-        javascript rules (eg: keep only content which type is "mp3" and which "genre" is "rock").
+        . The client browser interacts with the server to create filters.
+        A filter is a virtual folder, which will retain content based on
+        javascript rules defined by the user (either manually or via a GUI)
+        in the browser. Each filter, when created, is associated one
+        or several plugins, responsible for extracting metadata from specific
+        content (mp3 files, video files, etc). A filter is watching content
+        from a physical location, and can optionnally scan recursively children
+        directories. Everytime a new content (added or modified content) is
+        detected, the content metadata is extracted by the associated plugin(s),
+        and matched against the associated javascript rules (eg: keep only
+        content which type is "mp3" and which "genre" is "rock").
 
 
 
 HOW IT WORKS:
 -------------
 
-        . The solution is based on a client server architecture. The content browser is the client. The java based rules indexer is the
-        server. The browser interacts with the server via a TCP/IP connection to manipulate and browse 'filters'. A filter can be
-        considered as a 'virtual folder'; It watches a location (url), and uses user defined rules to retain content. The filter relies
-        on plugins to extract and apply rules to the content (accessible via the filter's url).
+        . The solution is based on a client server architecture. The content
+        browser is the client. The java based rules indexer is the server.
+        The browser interacts with the server via a TCP/IP connection to
+        manipulate and browse 'filters'. A filter can be considered as a
+        'virtual folder'; It watches a location (url), and uses user defined
+        rules to retain content. The filter relies on plugins to extract and
+        apply rules to the content (accessible via the filter's url).
 
-        . When creating a filter, the user selects the plugins associated with the filter (mp3, web, rss, etc) depending on the type of
-        content he's interested in. The user will then, for each plugin associated with the filter, specify the rules to be applied to the
-        metadata (eg: the mp3 tag 'genre' must be equal to 'rock' or 'jazz). Every time new content is detected by the filter, the latter will
-        request the plugins to extract the meta data from the new content and to apply its rules to it. The plugin will either 'accept' or
-        'reject' the content based on the result of this operation. If any of the plugins associated with the filter accepts the content,
-        the filter will retain it.
+        . When creating a filter, the user selects the plugins associated with
+        the filter (mp3, web, rss, etc) depending on the type of content he's
+        interested in. The user will then, for each plugin associated with the
+        filter, specify the rules to be applied to the metadata (eg: the mp3
+        tag 'genre' must be equal to 'rock' or 'jazz). Every time new content
+        is detected by the filter, the latter will request the plugins to
+        extract  the meta data from the new content and to apply its rules to
+        it. The plugin will either 'accept' or 'reject' the content based on
+        the result of this operation. If any of the plugins associated with
+        the filter accepts the content, the filter will retain it.
 
-        . Filters can be encapsulated in a hierarchical manner, as would physical directories be encapsulated. A child filter will only consider
-        content which was retained by its parent filter.
+        . Filters can be encapsulated in a hierarchical manner, as would
+        physical  directories be encapsulated. A child filter will only
+        consider content which was retained by its parent filter.
 
-        . When browsing a filters tree, the user will experience the same navigation paradigm as he would find in a traditional files browser,
-        with the difference that the content is organized based on the rules he gave when creating the filters, rather than on the files
-        physical location and naming. A filter tree, aka a 'Filter Set' can be saved (filters, associated plugins, rules, and indexing results)
-        and reloaded very quickly. This enables the user to switch rapidly between two different virtual organization of his content.
+        . When browsing a filters tree, the user will experience the same
+        navigation paradigm as he would find in a traditional files browser,
+        with the difference that the content is organized based on the rules
+        he gave when creating the filters, rather than on the files physical
+        location and naming. A filter tree, aka a 'Filter Set' can be saved
+        (filters, associated plugins, rules, and indexing results) and reloaded
+        very quickly. This enables the user to switch rapidly between two
+        different virtual organization of his content.
 
-        . The indexation results are saved in a database. The server uses the database to quickly retrieve the content (and its metadata)
-        associated with a filter and pass it over to the client browser to show the user the filters tree.
+        . The indexation results are saved in a database. The server uses the
+        database to quickly retrieve the content (and its metadata) associated
+        with a filter and pass it over to the client browser to show the user
+        the filters tree.
 
 
 WARNING:
 --------
 
-        . Data exchanged between the client and the server is NOT encrypted, including the user and password.
+        . Data exchanged between the client and the server is NOT encrypted,
+        including the user and password.
+
+        . the wait_timeout option must be set when starting mysqld, else,
+        the server will apparently stop reporting file modifications after
+        several hours without file modifications on the watched directories,
+        because the DB server will have dropped the connection.
 
 
 
@@ -60,42 +90,50 @@ DEV NOTES:
 
         . Dependencies:
 
-                Build Order: 
-				
-				PluginInterface
-					FilePlugin
-						Mp3Plugin
+        Build Order:
 
-                                ServerDatabase, ClientServerInterface, PluginInterface, QFileExtensions
-					Server
-					Client
-					
-                Dev Tools/SDK: Qt Creator 2.0.1, Based on Qt 4.8.1 (64 bit)
-                Database Mgmt: MySQL server (mysql-server 5.1), MySQL QT Driver (libqt4-sql-mysql 4.8.1)
-                MP3 support: relies on libid3tag
+                        PluginInterface
+                                FilePlugin
+                                        Mp3Plugin
 
-        . Using mysql-admin, phpMyAdmin or CreateDatabase.sh (easier), create a "SIONDatabase" database, and add it a user/pwd SION/SION.
+                        ServerDatabase, ClientServerInterface, PluginInterface,
+                         QFileExtensions
+                                Server
+                                Client
+
+        Dev Tools/SDK: Qt Creator 2.0.1, Based on Qt 4.8.1 (64 bit)
+        Database Mgmt: MySQL server (mysql-server 5.1),
+         MySQL QT Driver (libqt4-sql-mysql 4.8.1)
+
+        MP3 support: relies on libid3tag
+
+        . Using mysql-admin, phpMyAdmin or CreateDatabase.sh (easier), create
+         a "SIONDatabase" database, and add it a user/pwd SION/SION.
 
         . Copy QT's libqsqlmysql.so into the Server executable's directory
 
-        . Create a SYMLINK to libFilePlugin.so.1.0.0, rename it "FilePlugin.so" and place into the Server executable's directory
+        . Create a SYMLINK to libFilePlugin.so.1.0.0, rename it "FilePlugin.so"
+         and place into the Server executable's directory
 
-        . Create a SYMLINK to libMp3Plugin.so.1.0.0, rename it "Mp3Plugin.so" and place into the Server executable's directory
+        . Create a SYMLINK to libMp3Plugin.so.1.0.0, rename it "Mp3Plugin.so"
+         and place into the Server executable's directory
 
-        . Create a SYMLINK to libImdbPlugin.so.1.0.0, rename it "ImdbPlugin.so" and place into the Server executable's directory
+        . Create a SYMLINK to libImdbPlugin.so.1.0.0, rename it "ImdbPlugin.so"
+         and place into the Server executable's directory
 
+        . Create a SYMLINK to libFacePlugin.so.1.0.0, rename it "FacePlugin.so"
+         and place into the Server executable's directory
 
 TODO:
 -----
 
-        . Add Time Out support in SyncHttp to prevent network outage from blocking the server indexing for ages
+        . Add Time Out support in SyncHttp to prevent network outage from
+         blocking the server indexing for ages
 
-        . Support 'dynamic filters': when a filter is started, it prompts the client with the meta-data values. Thus, this type of filter
-          can be used to do a search. If used as a child of another filter, only the content retained by the parent filter will be examined.
-
-        . Implement a face recognition plugin (based on openCV)
-
-        . Implement a TV content plugin
+        . Support 'dynamic filters': when a filter is started, it prompts the
+         client with the meta-data values. Thus, this type of filter can be
+         used to do a search. If used as a child of another filter, only the
+         content retained by the parent filter will be examined.
 
         . Implement a WEB plugin
 
