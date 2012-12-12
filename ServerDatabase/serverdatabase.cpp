@@ -74,9 +74,6 @@ ServerDatabase::ServerDatabase() {
         }
         m_db = QSqlDatabase::addDatabase(sqlDriver);
 
-        // don't disconnect even if there's no interaction with the db server
-        m_db.setConnectOptions("MYSQL_OPT_CONNECT_TIMEOUT=0");
-
         // create tables if non existing
         createTables();
     }
