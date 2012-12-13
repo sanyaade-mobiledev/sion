@@ -34,8 +34,10 @@ ListBrowser::ListBrowser(bool editable, QStringList list, QWidget *parentP) :
     ui->setupUi(this);
     ui->selectionEdit->setEnabled(editable);
     ui->selectionList->addItems(list);
-    if (!list.isEmpty())
+    if (!list.isEmpty()) {
         ui->selectionList->item(0)->setSelected(true);
+        ui->selectionEdit->setText(list[0]);
+    }
 
     setWindowTitle(tr("Select an item"));
 
