@@ -214,7 +214,7 @@ bool ServerDatabase::hasFile(QString filterId, QString filepath) {
 #endif
 
     // check if file exists
-    if (!query.exec("SELECT * FROM files WHERE path='" + filepath + "' AND filter_id=" + filterId))
+    if (!query.exec("SELECT filter_id FROM files WHERE path='" + filepath + "' AND filter_id=" + filterId))
         goto hasFileEnd;
 
     // if the result set is not empty, we can move to the next selected tuple...
@@ -327,11 +327,11 @@ void ServerDatabase::addFileAttribute(QString fileId, QString attrName, QString 
 #endif
 
     // insert tuple filepath/attrName
-#ifndef _INSERT_UPDATE_ATTRIBUTE
+#ifdef _INSERT_UPDATE_ATTRIBUTE
+    if (!query.exec("INSERT INTO attributes(file_id, attribute_name, attribute_value) VALUES(" + fileId + ", '" + attrName + "', '" + attrValue + "') ON DUPLICATE KEY UPDATE attribute_value='" + attrValue + "'")) {
+#else
     query.exec("DELETE FROM attributes WHERE file_id=" + fileId + " AND attribute_name='" + attrName + "'");
     if (!query.exec("INSERT INTO attributes(file_id, attribute_name, attribute_value) VALUES(" + fileId + ", '" + attrName + "', '" + attrValue + "')")) {
-#else
-    if (!query.exec("INSERT INTO attributes(file_id, attribute_name, attribute_value) VALUES(" + fileId + ", '" + attrName + "', '" + attrValue + "') ON DUPLICATE KEY UPDATE attribute_value='" + attrValue + "'")) {
 #endif
         qDebug() << QObject::tr("Failed to insert into attributes table in DB ") + DB_NAME + QObject::tr(" on host ") + DB_HOST + QObject::tr(" with usr/pwd ") + DB_USR + "/" + DB_PWD;
         qDebug() << QObject::tr("ERROR: ") + query.lastError().text();

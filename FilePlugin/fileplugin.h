@@ -35,7 +35,7 @@
 #include "script.h"
 #include "scriptrunner.h"
 
-#define _VERBOSE_FILE_PLUGIN 1
+//#define _VERBOSE_FILE_PLUGIN 1
 
 #define  FILE_PLUGIN_NAME  "Base File Plugin"
 #define  FILE_PLUGIN_TIP   "Handles Basic File Attributes (creation time, name, path, size, etc)."
